@@ -1,0 +1,7 @@
+node_modules
+.idea
+output.log
+.kinvey
+cleanup.sh
+.nvmrc
+message.txt
