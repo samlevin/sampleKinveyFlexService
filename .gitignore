@@ -5,3 +5,4 @@ output.log
 cleanup.sh
 .nvmrc
 message.txt
+.DS_Store

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>index.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>index.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">const</span> sdk = <span class="hljs-built_in">require</span>(<span class="hljs-string">'kinvey-flex-sdk'</span>);
+
+<span class="hljs-keyword">const</span> packageJson = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./package.json'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>It’s a good practice to log service version at startup for
+informational, debuggingm and troubleshooting purposes</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">console</span>.log(packageJson.version + <span class="hljs-string">' init start'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>This block initializes the SDK using <code>options</code> provided
+in the object passed to the first parameter. It accepts a callback as its second paramater which
+contains an <code>err</code> if there was a problem starting the service or a <code>flex</code> instance otherwise.</p>
+<p>This specific service defines a <code>sharedSecret</code> named <code>link</code>. When creating an Internal Flex Service in the console, the <code>sharedSecret</code>
+associated with the service must match what is entered at Flex SDK initialization time</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>sdk.service({ <span class="hljs-attr">sharedSecret</span>: <span class="hljs-string">'link'</span> }, (err, flex) =&gt; {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p><code>flex.functions</code> contains tools for mapping Kinvey Business Logic to functions/handlers in a Flex SDK service</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> flexFunctions = flex.functions;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p><code>flex.data</code> contains tools for responding to Kinvey requests for collection data</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> flexData = flex.data;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p><code>flex.logger</code> is a FSR-compliant logging utility which includes threshold support (e.g. <code>INFO</code>, <code>ERROR</code>, etc.).
+The output of a <code>flex.logger</code> call will be visible when running <code>kinvey logs</code> via the Kinvey CLI</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> logger = flex.logger;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>A simple asynchronous sanity-check to ensure that the service cannot write to the filesystem (when deployed to the FSR).
+This is disallowed in the present but there are plans to create an ephemeral file share per-service in the future</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  fs.appendFile(<span class="hljs-string">'./message.txt'</span>, <span class="hljs-string">'data to append'</span>, (err) =&gt; {
+    <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'file unable to be created'</span>);
+  });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>A sample <code>flex.data</code> handler that responds to an <code>onGetAll</code> Kinvey query, e.g. <code>GET &lt;kinvey-baas-URL&gt;/CoolCollection</code>.
+It responds using hard-coded data but typically a handler like this would make outbound request in order
+to retrieve data to fulfill the request.</p>
+<p>The <code>request</code> parameter contains the request context made by the user. The <code>complete</code> parameter is the SDK completion handler
+which should be invoked when the function is ready to respond to the Kinvey request. The <code>modules</code> parameter is a collection of
+modules, some of which are initialized on a per-request basis, used to hook into various Kinvey functionality (e.g. sending push/email notifications).</p>
+<p>Check the <a href="https://devcenter.kinvey.com/nodejs/guides/flex-services#DataHandlerFunctions">Data Handler Functions</a> section in Flex Services DevCenter guide
+for more information on completion handler methods, status functions, and request pipeline chaining</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> getAllRecords = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">request, complete, modules</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Hard-coded data to include in response</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> responseObject = { <span class="hljs-attr">some</span>: <span class="hljs-number">15</span>, <span class="hljs-attr">data</span>: <span class="hljs-number">25</span> };
+
+    logger.info(<span class="hljs-string">'getAllRecords SDK request received'</span>);
+
+    <span class="hljs-keyword">if</span> (responseObject == <span class="hljs-literal">null</span>) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>An example of using the Flex SDK completion handler to return an <code>HTTP 404</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">return</span> complete().setBody(<span class="hljs-string">"The entity could not be found"</span>).notFound().next();
+    } <span class="hljs-keyword">else</span>  {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Here various properties are appended to the request to be used for development and troubleshooting purposes. These properties include
+the intended response, the service version, and the node version</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      request.responseObject = responseObject;
+      request.serviceVersion = packageJson.version;
+      request.nodeVersion = process.versions;
+
+      logger.info(<span class="hljs-string">'Preparing to return...'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>This completion handler returns an <code>HTTP 200</code> response along with the initial request plus properties appended above. This is helpful for validating
+that the expected request parameters are correctly generated and forwarded to Flex services when requests are made</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">return</span> complete().setBody(request).ok().next();
+    }
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>A sample <code>flex.data</code> handler that responds to an <code>onGetAllById</code> Kinvey query, e.g. <code>GET &lt;kinvey-baas-URL&gt;/CoolCollection/:1</code> (a request for a specific entity).
+The implementation is the same as <code>onGetAll</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> getRecordById = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">request, complete, modules</span>) </span>{
+    <span class="hljs-keyword">const</span> responseObject = { <span class="hljs-attr">some</span>: <span class="hljs-number">15</span>, <span class="hljs-attr">data</span>: <span class="hljs-number">25</span> };
+
+    logger.info(<span class="hljs-string">'getRecordById SDK request received'</span>);
+
+    <span class="hljs-keyword">if</span> (responseObject == <span class="hljs-literal">null</span>) {
+      <span class="hljs-keyword">return</span> complete().setBody(<span class="hljs-string">"The entity could not be found"</span>).notFound().next();
+    } <span class="hljs-keyword">else</span>  {
+      request.responseObject = responseObject;
+      request.serviceVersion = packageJson.version;
+      request.nodeVersion = process.versions;
+
+      logger.info(<span class="hljs-string">'Preparing to return...'</span>);
+
+      <span class="hljs-keyword">return</span> complete().setBody(request).ok().next();
+    }
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Gets a handle to a service object for Kinvey collection <code>CoolCollection</code>. <code>flex.data.serviceObject</code> is used to pair
+handlers (i.e. the functions defined above) with Kinvey <a href="https://devcenter.kinvey.com/nodejs/guides/flex-services#DataEvents">data events</a> for the purpose of responding to BaaS queries from node microservices</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> CoolCollectionServiceObject = flexData.serviceObject(<span class="hljs-string">'CoolCollection'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>When <code>CoolCollection</code> is queried with an ID, call <code>getRecordById</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  CoolCollectionServiceObject.onGetById(getRecordById);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>When <code>CoolCollection</code> is queried without an identifier, call <code>getAllRecords</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  CoolCollectionServiceObject.onGetAll(getAllRecords);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Generic handler designed to be paired with Kinvey Business Logic. This code can be invoked pre/post fetch/save/delete (or with a dedicated custom endpoint, i.e. RPC-style).
+This method invokes <code>done</code> on the <code>complete</code> handler, which ends all further processing and returns a response. In other words, if this business logic handler
+is assigned to a pre-processing event, the next operation in the chain won’t be called. Similarly to the Flex Data handlers defined above, this handler returns the request passed in.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> sampleBusinessLogic = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">request, complete, modules</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-keyword">return</span> complete().setBody(request).ok().done();
+    }, <span class="hljs-number">2000</span>);
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Handler which sends an email. Use it with pre/post hooks to send emails before/after a fetch/save/delete
+or wire it to a dedicated custom endpoint to send emails on-demand</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> emailer = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">request, complete, modules</span>) </span>{
+    modules.email.send(
+      <span class="hljs-string">'my-app@my-app.com'</span>,
+      <span class="hljs-string">'sam@kinvey.com'</span>,
+      <span class="hljs-string">'Test'</span>,
+      <span class="hljs-string">'Test'</span>, (err, result) =&gt; {
+        <span class="hljs-keyword">if</span> (err) {
+          logger.error(err);
+          <span class="hljs-keyword">return</span> complete().setBody(err).runtimeError().next();
+        }
+        logger.info(<span class="hljs-string">'Email sent without issue'</span>)
+        complete().ok().next();
+    });
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Handler which sends a push broadcast. Use it with pre/post hooks to send push notifications before/after a fetch/save/delete
+or wire it to a dedicated custom endpoint to send push notifications on-demand</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">const</span> pusher = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">request, complete, modules</span>) </span>{
+    modules.push.broadcastMessage(<span class="hljs-string">'bcast!'</span>, (err, result) =&gt; {
+      <span class="hljs-keyword">if</span> (err) {
+        logger.error(err);
+        <span class="hljs-keyword">return</span> complete().setBody(err).runtimeError().next();
+      }
+
+      logger.info(<span class="hljs-string">'Push sent without issue'</span>);
+      complete().ok().next();
+    });
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Use the Flex SDK (<code>flex.functions</code>) to export the functions above as BL handlers. The following handlers (<code>sampleBusinessLogic</code>, <code>pusher</code>, and <code>emailer</code>)
+will be available in the Kinvey console when creating pre/post hooks or custom endpoints. Requests to these endpoints, or invocation of pre/post hooks will be 
+respectively forwarded to the functions defined above</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  flexFunctions.register(<span class="hljs-string">'sampleBusinessLogic'</span>, sampleBusinessLogic);
+  flexFunctions.register(<span class="hljs-string">'pusher'</span>, pusher);
+  flexFunctions.register(<span class="hljs-string">'emailer'</span>, emailer);
+});</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
