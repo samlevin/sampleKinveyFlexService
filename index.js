@@ -22,6 +22,9 @@ sdk.service({ sharedSecret: 'link' }, (err, flex) => {
   // The output of a `flex.logger` call will be visible when running `kinvey logs` via the Kinvey CLI
   const logger = flex.logger;
 
+  // Initiate the flex auth
+  const flexAuth = flex.auth;
+
   // A simple asynchronous sanity-check to ensure that the service cannot write to the filesystem (when deployed to the FSR).
   // This is disallowed in the present but there are plans to create an ephemeral file share per-service in the future
   fs.appendFile('./message.txt', 'data to append', (err) => {
@@ -81,16 +84,16 @@ sdk.service({ sharedSecret: 'link' }, (err, flex) => {
       return complete().setBody(request).ok().next();
     }
   };
- 
+
   // Gets a handle to a service object for Kinvey collection `CoolCollection`. `flex.data.serviceObject` is used to pair
   // handlers (i.e. the functions defined above) with Kinvey [data events](https://devcenter.kinvey.com/nodejs/guides/flex-services#DataEvents) for the purpose of responding to BaaS queries from node microservices
   const CoolCollectionServiceObject = flexData.serviceObject('CoolCollection');
- 
+
   // When `CoolCollection` is queried with an ID, call `getRecordById`
   CoolCollectionServiceObject.onGetById(getRecordById);
 
   // When `CoolCollection` is queried without an identifier, call `getAllRecords`
-  CoolCollectionServiceObject.onGetAll(getAllRecords); 
+  CoolCollectionServiceObject.onGetAll(getAllRecords);
 
   // Generic handler designed to be paired with Kinvey Business Logic. This code can be invoked pre/post fetch/save/delete (or with a dedicated custom endpoint, i.e. RPC-style).
   // This method invokes `done` on the `complete` handler, which ends all further processing and returns a response. In other words, if this business logic handler
@@ -132,8 +135,16 @@ sdk.service({ sharedSecret: 'link' }, (err, flex) => {
     });
   };
 
+  // Handler which return a random generated auth token
+  function authenticate(context, complete, modules) {
+    const token = Math.random().toString(36).substring(7);
+    return complete().setToken(token).ok().next();
+  }
+  // Register the authenticate function with flex auth
+  flexAuth.register('myAuth', authenticate);
+
   // Use the Flex SDK (`flex.functions`) to export the functions above as BL handlers. The following handlers (`sampleBusinessLogic`, `pusher`, and `emailer`)
-  // will be available in the Kinvey console when creating pre/post hooks or custom endpoints. Requests to these endpoints, or invocation of pre/post hooks will be 
+  // will be available in the Kinvey console when creating pre/post hooks or custom endpoints. Requests to these endpoints, or invocation of pre/post hooks will be
   // respectively forwarded to the functions defined above
   flexFunctions.register('sampleBusinessLogic', sampleBusinessLogic);
   flexFunctions.register('pusher', pusher);

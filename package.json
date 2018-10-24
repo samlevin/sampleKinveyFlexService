@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["Kinvey", "Flex", "FSR"],
+  "keywords": [
+    "Kinvey",
+    "Flex",
+    "FSR"
+  ],
   "author": "Sam Levin",
   "license": "Apache 2.0",
   "dependencies": {
